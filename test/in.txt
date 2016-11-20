@@ -1,0 +1,16 @@
+site1	tag1
+site2	tag1
+site1	tag3
+site3	tag3
+site1	tag4
+site4	tag1
+site4	tag4
+site1	tag5
+site5	tag1
+site5	tag3
+site5	tag2
+site5	tag4
+site5	tag5
+site6	tag3
+site6	tag1
+site6	tag4

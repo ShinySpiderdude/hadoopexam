@@ -20,24 +20,19 @@ Can be popular tags with 10k sites per one tag.
 
 */
 
+import jobs.Job1;
+import jobs.Job2;
+import jobs.Job3;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
-import org.apache.hadoop.mapreduce.lib.jobcontrol.ControlledJob;
-import org.apache.hadoop.mapreduce.lib.jobcontrol.JobControl;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -95,143 +90,64 @@ import java.util.List;
  */
 class HadoopExam {
 
-    public static class TagToSitesMapper extends Mapper<Object, Text, Text, Text> {
 
-        private Text tag = new Text();
-        private Text site = new Text();
 
-        public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
-            String[] tokens = value.toString().split("\t") ;
-            site.set(tokens[0]);
-            tag.set(tokens[1]);
 
-            context.write(tag, site);
-        }
-    }
-
-    public static class SiteCombinationsReducer extends Reducer<Text, Text, Text, Text> {
-
-        private Text keyOut1 = new Text() ;
-        private Text keyOut2 = new Text() ;
-
-        public void reduce(Text tag, Iterable<Text> sites, Context context) throws IOException, InterruptedException {
-
-            //As stated above, i need to copy all the iterable sites into a list
-            //I'm using an ArrayList to cache the "Iterable" (Rather than, say, a "LinkedList") since i'm going to do
-            //a lot more "gets" than "add"s
-            List<String> list = new ArrayList<>();
-            sites.forEach(value -> list.add(value.toString()));
-
-            //Emit pairs of [(siteX, siteY), tag]). If a tag has just one site associated, nothing will be emitted
-            for (int i = 0; i < list.size() - 1; i++) {
-                for (int j = i + 1; j < list.size(); j++) {
-
-                    //Site1\tSite2
-                    keyOut1.set(list.get(i) + "\t" + list.get(j));
-                    context.write(keyOut1, tag);
-                    
-                    //Site2\tSite1
-                    keyOut2.set(list.get(j) + "\t" + list.get(i));
-                    context.write(keyOut2, tag);
+    public static boolean deleteDirectory(String dir) {
+        File directory = new File(dir) ;
+        if(directory.exists()){
+            File[] files = directory.listFiles();
+            if(null!=files){
+                for(int i=0; i<files.length; i++) {
+                    if(files[i].isDirectory()) {
+                        deleteDirectory(files[i].getAbsolutePath());
+                    }
+                    else {
+                        files[i].delete();
+                    }
                 }
             }
-
         }
+        return(directory.delete());
     }
 
-    public static class SiteSumMapper extends Mapper<Object, Text, Text, Text> {
-
-        private Text siteAndSimilar = new Text() ;
-        private Text tag = new Text() ;
-
-        public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
-            String[] tokens = value.toString().split("\t") ;
-            siteAndSimilar.set(tokens[0] + "\t" + tokens[1]);
-            tag.set(tokens[2]);
-
-            context.write(siteAndSimilar, tag);
-        }
-
-    }
-
-    public static class SiteSumReducer extends Reducer<Text, Text, Text, IntWritable> {
-
-        private IntWritable sum = new IntWritable();
-
-        public void reduce(Text siteAndSimilar, Iterable<Text> tags, Context context) throws IOException, InterruptedException {
-            int totalSimilarTags = 0 ;
-            for (Text tag : tags) {
-                totalSimilarTags++ ;
-            }
-            sum.set(totalSimilarTags);
-            context.write(siteAndSimilar, sum);
-
-        }
-
-
-    }
-
-
-    public static int job1(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
-        Configuration conf = new Configuration();
-        Job job = Job.getInstance(conf, "job1");
+    public static Job job(String jobName, String inPath, String outPath, Class mapper, Class reducer,
+                          Class outputKeyClass, Class outputValueClass) throws IOException {
+        Configuration conf = new Configuration() ;
+        Job job = Job.getInstance(conf, jobName) ;
         job.setJarByClass(HadoopExam.class);
-        job.setMapperClass(HadoopExam.TagToSitesMapper.class);
-        job.setReducerClass(HadoopExam.SiteCombinationsReducer.class);
-        job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(Text.class);
-        FileInputFormat.addInputPath(job, new Path(args[0]));
-        FileOutputFormat.setOutputPath(job, new Path(args[1]));
-
-        return job.waitForCompletion(true) ? 0 : 1;
-    }
-
-    public static int job2(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
-        Configuration conf = new Configuration();
-        Job job = Job.getInstance(conf, "job2");
-        job.setJarByClass(HadoopExam.class);
-        job.setMapperClass(HadoopExam.SiteSumMapper.class);
-        job.setReducerClass(HadoopExam.SiteSumReducer.class);
-        job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(Text.class);
-        FileInputFormat.addInputPath(job, new Path(args[1]));
-        FileOutputFormat.setOutputPath(job, new Path(args[2]));
-
-        return job.waitForCompletion(true) ? 0 : 1;
+        job.setMapperClass(mapper);
+        job.setReducerClass(reducer);
+        job.setOutputKeyClass(outputKeyClass);
+        job.setOutputValueClass(outputValueClass);
+        FileInputFormat.addInputPath(job, new Path(inPath));
+        FileOutputFormat.setOutputPath(job, new Path(outPath));
+        return job ;
     }
 
     public static void main(String[] args) throws Exception {
 
-        if (job1(args) == 0) {
-            System.exit(job2(args));
-        } else {
-            System.exit(1);
+        String inPath = args[0] ;
+        String intermed1 = args[1] ;
+        String intermed2 = args[2] ;
+        String out = args[3] ;
+
+        //Delete intermediates and output if they already exist
+        deleteDirectory(intermed1) ;
+        deleteDirectory(intermed2) ;
+        deleteDirectory(out) ;
+
+        List<Job> jobs = new LinkedList<>() ;
+        jobs.add(job("job1", inPath, intermed1, Job1.TagToSitesMapper.class, Job1.SiteCombinationsReducer.class, Text.class, Text.class)) ;
+        jobs.add(job("job2", intermed1, intermed2, Job2.SiteSumMapper.class, Job2.SiteSumReducer.class, Text.class, Text.class));
+        jobs.add(job("job3", intermed2, out, Job3.CompositeKeyMapper.class, Job3.SiteCombinationsReducer.class, Job3.SiteAndTagCount.class, Text.class)) ;
+
+        for (Job job : jobs) {
+            if (job.waitForCompletion(false) == false) {
+                //Job failed, exit
+                System.exit(1);
+            }
         }
-//
-//        JobControl jobControl = new JobControl("jobChain");
-//
-//        //System.exit(job1.waitForCompletion(true) ? 1 : 0);
-//
-//        ControlledJob cj1 = job1(args) ;
-//
-//        jobControl.addJob(cj1) ;
-//
-//
-//        Thread jobControlThread = new Thread(jobControl);
-//        jobControlThread.start();
-//
-//        while (!jobControl.allFinished()) {
-//            System.out.println("Jobs in waiting state: " + jobControl.getWaitingJobList().size());
-//            System.out.println("Jobs in ready state: " + jobControl.getReadyJobsList().size());
-//            System.out.println("Jobs in running state: " + jobControl.getRunningJobList().size());
-//            System.out.println("Jobs in success state: " + jobControl.getSuccessfulJobList().size());
-//            System.out.println("Jobs in failed state: " + jobControl.getFailedJobList().size());
-//            try {
-//                Thread.sleep(5000);
-//            } catch (Exception e) {
-//
-//            }
-//
-//        }
+
     }
 }
