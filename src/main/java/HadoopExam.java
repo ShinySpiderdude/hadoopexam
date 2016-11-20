@@ -90,9 +90,7 @@ import java.util.List;
  */
 class HadoopExam {
 
-
-
-
+    //A method to delete a directory, shamelessly copied from Stack overflow
     public static boolean deleteDirectory(String dir) {
         File directory = new File(dir) ;
         if(directory.exists()){
@@ -111,6 +109,7 @@ class HadoopExam {
         return(directory.delete());
     }
 
+    // A generic method to create a MapReduce job
     public static Job job(String jobName, String inPath, String outPath, Class mapper, Class reducer,
                           Class outputKeyClass, Class outputValueClass) throws IOException {
         Configuration conf = new Configuration() ;

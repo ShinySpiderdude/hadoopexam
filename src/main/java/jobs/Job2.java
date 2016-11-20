@@ -17,6 +17,7 @@ public class Job2 {
         private Text siteAndSimilar = new Text() ;
         private Text tag = new Text() ;
 
+        //This method will take the output of the previous job and map it to (site, similar) -> (tag) pairs
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
             String[] tokens = value.toString().split("\t") ;
             siteAndSimilar.set(tokens[0] + "\t" + tokens[1]);
@@ -31,6 +32,7 @@ public class Job2 {
 
         private IntWritable sum = new IntWritable();
 
+        // This will sum up the similar tags for each (site, similar) pair
         public void reduce(Text siteAndSimilar, Iterable<Text> tags, Context context) throws IOException, InterruptedException {
             int totalSimilarTags = 0 ;
             for (Text tag : tags) {

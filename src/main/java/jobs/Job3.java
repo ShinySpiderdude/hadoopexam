@@ -15,12 +15,20 @@ import java.io.IOException;
  */
 public class Job3 {
 
-    public static int TOP_SIMILAR_SITES_FOR_SITE = 2 ;
+    public static int TOP_SIMILAR_SITES_FOR_SITE = 10 ;
 
+    /**
+     * This class holds a site and the tag count for that class,
+     * I would've used a simple string of the form "site1 3", but unfortunately
+     * if i use strings for this purpose the comparison will be off since "site1 13" < "site1 3".
+     * This forces me to use this "WritableComparable" interface so i can compare actual numbers.
+     */
     public static class SiteAndTagCount implements WritableComparable<SiteAndTagCount> {
         // Some data
         private String site;
         private int tagCounter;
+
+        // SOME BOILERPLATE AHEAD...
 
         public void set(String site, int tagCounter) {
             this.site = site ;
@@ -50,7 +58,7 @@ public class Job3 {
             if (!this.site.equals(o.site)) {
                 return this.site.compareTo(o.site) ;
             }
-            //We multiply by -1 to make the order descending (rather than ascending)
+            // -> We multiply by -1 to make the order descending (rather than ascending) <-
             return new Integer(this.tagCounter).compareTo(o.tagCounter) * -1 ;
         }
 
@@ -69,6 +77,7 @@ public class Job3 {
         private SiteAndTagCount siteAndTagCount = new SiteAndTagCount() ;
         private Text similarText = new Text() ;
 
+        //Map the trio (site, similar, tagCount) to (site, tagCounter) -> similar
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
             String[] tokens = value.toString().split("\t") ;
             String site = tokens[0] ;
@@ -92,6 +101,13 @@ public class Job3 {
         private Text siteAndSimilar = new Text() ;
         private IntWritable tagCount = new IntWritable() ;
 
+
+        //It is worth noting (actually, it is essential) that the MapReduce framework sends the output of the above
+        //mapper in a sorted manner as depicted by the "SiteAndTagCount" class (site names ASC, tagCount DESC)
+        //so the expected input will be something of the sort:
+        //(Site1, 5) -> [Similars]
+        //(Site1, 3) -> [Similars]
+        //(Site2, 6) -> [Similars]
         public void reduce(SiteAndTagCount siteAndTagCounter, Iterable<Text> similars, Context context) throws IOException, InterruptedException {
             String site = siteAndTagCounter.getSite() ;
             if (!site.equals(currentSite)) {
