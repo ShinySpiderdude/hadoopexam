@@ -1,0 +1,29 @@
+SimilarWeb test – Big Data:
+*****************************
+
+Requirements: in this task you should write hadoop java map reduce job/s
+The Task: calculate similar sites by count of common tags
+The input will be text file (tsv format ):
+
+Site1	tag1
+Site1	tag2
+Site3	tag3
+...
+
+
+The final output should be in text file ( top 10 similar sites per site ) and should be sorted by secondary sort. 
+Site1	Similar1	count-of-common-tags
+Site1	Similar2	count-of-common-tags
+Site2	Similar1	count-of-common-tags
+…
+
+
+Data:
+Each website can have up to 100 tags.
+There are 200M websites.
+There can be popular tags with 10k sites per one tag.
+
+Notes:
+1.	There is no need to install Hadoop cluster, you can execute test as regular java application - all relevant dependencies will be supplied by Maven.
+2.	Secondary sort is well known hadoop technique and you should familiarize yourself with it. 
+3.      Using the mapreduce package as opposed to mapred is highly recommended
