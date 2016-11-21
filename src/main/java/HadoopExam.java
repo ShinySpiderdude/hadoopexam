@@ -29,10 +29,14 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-class HadoopExam {
+public class HadoopExam {
+
+    public static int TOP_X = 10 ;
 
     //A method to delete a directory, shamelessly copied from Stack overflow
     public static boolean deleteDirectory(String dir) {
@@ -77,6 +81,7 @@ class HadoopExam {
 
         String intermed1 = temp + "/intermed1" ;
         String intermed2 = temp + "/intermed2" ;
+        String intermed3 = temp + "/intermed3" ;
 
         String out = args[2] ;
 
@@ -85,11 +90,14 @@ class HadoopExam {
         deleteDirectory(out) ;
 
         List<Job> jobs = new LinkedList<>() ;
-        jobs.add(job("job1", inPath, intermed1, Phase1Mapper.class, Phase1Reducer.class, Text.class, Text.class)) ;
-        jobs.add(job("job2", intermed1, intermed2, Phase2Mapper.class, Phase2Reducer.class, Text.class, Text.class)) ;
+        jobs.add(job("phase-1", inPath, intermed1, Phase1Mapper.class, Phase1Reducer.class, Text.class, Text.class)) ;
+        jobs.add(job("phase-2", intermed1, intermed2, Phase2Mapper.class, Phase2Reducer.class, Text.class, Text.class)) ;
+        jobs.add(job("phase-3", intermed2, intermed3, Phase3Mapper.class, Phase3Reducer.class, Text.class, Text.class)) ;
         //jobs.add(job("job2", intermed1, intermed2, Job2.SiteSumMapper.class, Job2.SiteSumReducer.class, Text.class, Text.class));
         //jobs.add(job("job3", intermed2, out, Job3.CompositeKeyMapper.class, Job3.SiteCombinationsReducer.class, Job3.SiteAndTagCount.class, Text.class)) ;
 
+
+        //Chain the jobs
         for (Job job : jobs) {
             if (job.waitForCompletion(false) == false) {
                 //Job failed, exit
