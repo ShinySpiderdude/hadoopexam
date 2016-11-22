@@ -185,3 +185,7 @@ Few hours: Trying to arrive at a more elegant solution (the kind that i won't ha
 ~15-30m: getting acquainted with MR techniques such as secondary sort and partitioning
 Few hours: Getting acquainted with the MR java api, coding, testing, debugging, etc..
 ~30m-1h: writing this document
+
+
+Best regards,
+Ilan G
