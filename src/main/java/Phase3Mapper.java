@@ -34,12 +34,12 @@ public class Phase3Mapper extends Mapper<Object, Text, Text, IntWritable> {
             sites.add(tokens[i]);
         }
 
-        //Split the sites array to a list of "TOP_X" (10) size and one with the rest
+        //Split the sites array to a list of "TOP_N" (10) size and one with the rest
         List<String> head ;
         List<String> tail = new ArrayList<>();
-        if (sites.size() > HadoopExam.TOP_X) {
-            head = sites.subList(0, HadoopExam.TOP_X);
-            tail = sites.subList(HadoopExam.TOP_X + 1, sites.size());
+        if (sites.size() > HadoopExam.TOP_N) {
+            head = sites.subList(0, HadoopExam.TOP_N);
+            tail = sites.subList(HadoopExam.TOP_N + 1, sites.size());
         } else {
             head = sites.subList(0, sites.size()) ;
         }

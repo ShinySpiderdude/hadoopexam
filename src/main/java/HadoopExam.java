@@ -36,7 +36,7 @@ import java.util.List;
 
 public class HadoopExam {
 
-    public static int TOP_X = 2 ;
+    public static int TOP_N = 10 ;
 
     //A method to delete a directory, shamelessly copied from Stack overflow
     public static boolean deleteDirectory(String dir) {

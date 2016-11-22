@@ -1,4 +1,3 @@
-import org.apache.commons.lang.ObjectUtils;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
@@ -26,7 +25,7 @@ public class Phase4Reducer  extends Reducer<SiteSimilarity, NullWritable, Text, 
         }
 
         //Emit the result only if the counter is smaller than the "TOP N" (10) sites we want
-        if (counter < HadoopExam.TOP_X) {
+        if (counter < HadoopExam.TOP_N) {
             String siteX = key.siteX.toString();
             //There should be just one value per entry
             String siteY = key.siteY.toString() ;
