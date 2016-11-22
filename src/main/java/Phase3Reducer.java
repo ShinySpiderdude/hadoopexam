@@ -7,7 +7,7 @@ import java.io.IOException;
 /**
  *
  * This reducer gets the maximum of the values mapped in the mapper phase and emits it with the pair
- * Created by ilan on 11/21/16.
+ *
  */
 public class Phase3Reducer extends Reducer<Text, IntWritable, Text, IntWritable> {
 

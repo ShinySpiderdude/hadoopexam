@@ -8,7 +8,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Created by ilan on 11/21/16.
+ *
+ * Refer to the README.txt to see what this mapper does
+ *
  */
 public class Phase3Mapper extends Mapper<Object, Text, Text, IntWritable> {
 
@@ -39,7 +41,7 @@ public class Phase3Mapper extends Mapper<Object, Text, Text, IntWritable> {
         List<String> tail = new ArrayList<>();
         if (sites.size() > HadoopExam.TOP_N) {
             head = sites.subList(0, HadoopExam.TOP_N);
-            tail = sites.subList(HadoopExam.TOP_N + 1, sites.size());
+            tail = sites.subList(HadoopExam.TOP_N, sites.size());
         } else {
             head = sites.subList(0, sites.size()) ;
         }

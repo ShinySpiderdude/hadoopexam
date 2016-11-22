@@ -4,9 +4,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-/**
- * Created by ilan on 11/22/16.
- */
 public class SiteSimilarity implements WritableComparable<SiteSimilarity> {
 
     // natural key
@@ -45,7 +42,7 @@ public class SiteSimilarity implements WritableComparable<SiteSimilarity> {
         return this.siteY.compareTo(that.siteY) ;
     }
 
-    //I don't really need this "equals", but for completions sake...
+    //I don't really need this "equals", but for completeness' sake...
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof SiteSimilarity)) {

@@ -3,7 +3,9 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Partitioner;
 
 /**
- * Created by ilan on 11/22/16.
+ *
+ * Make sure all siteX go to the same reducer
+ *
  */
 public class Phase4Partitioner extends Partitioner<SiteSimilarity, NullWritable> {
 

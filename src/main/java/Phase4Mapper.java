@@ -5,7 +5,9 @@ import org.apache.hadoop.mapreduce.Mapper;
 import java.io.IOException;
 
 /**
- * Created by ilan on 11/22/16.
+ *
+ * Map each (siteX, similarity, siteY) -> null
+ *
  */
 public class Phase4Mapper extends Mapper<Object, Text, SiteSimilarity, NullWritable> {
 
@@ -15,8 +17,8 @@ public class Phase4Mapper extends Mapper<Object, Text, SiteSimilarity, NullWrita
     @Override
     protected void map(Object key, Text value, Context context) throws IOException, InterruptedException {
         String[] tokens = value.toString().split("\t");
-        ssp.setSiteX(tokens[0]); ;
-        ssp.setSiteY(tokens[1]); ;
+        ssp.setSiteX(tokens[0]);
+        ssp.setSiteY(tokens[1]);
         ssp.setSimilarity(Integer.parseInt(tokens[2]));
 
         context.write(ssp, nullValue);

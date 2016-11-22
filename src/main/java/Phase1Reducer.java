@@ -7,8 +7,8 @@ import java.util.TreeSet;
 
 /**
  *
- * Doesn't really do much. just writes out the output of the Mapper
- * Created by ilan on 11/21/16.
+ * Sort the tags in the value list
+ * Frankly, this reducer is not strictly needed as we do this anyway in the next mapper
  */
 public class Phase1Reducer extends Reducer<Text, Text, Text, Text> {
 

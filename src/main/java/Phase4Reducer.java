@@ -6,7 +6,9 @@ import org.apache.hadoop.mapreduce.Reducer;
 import java.io.IOException;
 
 /**
- * Created by ilan on 11/22/16.
+ *
+ * Get the top 10 similarities for each site and write out the final result
+ *
  */
 public class Phase4Reducer  extends Reducer<SiteSimilarity, NullWritable, Text, IntWritable> {
 
