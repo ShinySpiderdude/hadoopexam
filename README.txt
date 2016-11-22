@@ -1,8 +1,12 @@
 The solution to the problem
 ---------------------------
+I must humbly admit that i did not find a solution that was both elegant and fast.
+I have found an elegant solution, but it was very slow.
+The solution i've found seems to run in a feasible time (relatively) although it is not exactly elegant so i ask you
+to bear with me while i try my best to explain.
 
-We are going to leverage the fact that there is a small number of possible tags for a single siteX and that
-we are only looking for top N similarities in order to keep calculations to a minimum:
+Basically, i am going to leverage the fact that there is a small number of possible tags for every single site X
+and that i am only looking for top N similarities in order to keep calculations to a minimum:
 
 Phase 1:
 
@@ -61,16 +65,33 @@ emit the pair and the max of all common-tags
 Phase 4:
 
 Step 7 (Mapper):
-We now map each entry to the form (siteX common-tags) -> (similar siteX) in order to create a secondary index
-We don't need all sets of (siteX siteY) as this will both take too long (as long as 10K^2 operations per entry)
-and is not needed since we only need top 10 similarities (we will "arbitrarily" choose the first 11 sites (for code
-readability) to be the similar sites for every siteX in this entry).
-Technical note: We'll have to create a "WritableComparable" object for the key in order to sort by
-(siteX ASC, common-tags DESC))
-And a partitioner to partition the entries by "siteX"
+In this step we do the secondary sorting and the top 10 in one go, doing just some small work in the reducer.
+It is possible to use "secondary sort" the "traditional" way (at least, that's how it seems most people who blog
+ about it do) of creating a support class for the key of type (siteX, similarity) (We still partition by siteX in order
+ for all siteX mappings to go the same reducer).
+ If i didn't need top 10 i would probably use that method, however, this might result in an output of:
+ site1, 10 -> site2, site3, site4
+ site1, 9 -> site5, site6
+ site1, 8 -> site7
+ etc..
+which will result in having to do some funky coding to get the top 10.
+Instead i opted to do following (i think it's simpler, i can see a different point of view here, though):
+The key class is built out of (siteX, similarity, siteY) fields
+Its comparator is made out of (siteX ASC, similarity DESC, siteY ASC)
+The mapper emits no value
+This results in a natural reducer input of:
+site1, 10, site2
+site1, 10, site3
+site1, 10, site4
+site1, 9, site5
+etc...
+
 
 Step 8 (Reducer):
 We are almost done. Since the input to the reducer is sorted by the [composite] key, we will have
-sorted entries by both siteX and common-tag-number. We will iterate through the 10 highest entries and drop
-the rest.
+sorted entries by both siteX and common-tag-number.
+Since the partitioner sends all "siteX" records to the same reducer, and they are in order we simply count records
+until we reach 10 and we stop emitting. When siteX changes we simply reset the counter..
+
+
 
