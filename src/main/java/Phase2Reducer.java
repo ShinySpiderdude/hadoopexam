@@ -25,7 +25,7 @@ public class Phase2Reducer extends Reducer<Text, Text, IntWritable, Text> {
         StringBuilder sb = new StringBuilder() ;
         set.forEach(site -> sb.append(site.toString()).append("\t"));
         sitesText.set(sb.toString());
-        //Because we don't need to emit a set of tags that has just site
+        //Because we don't need to emit a set of tags that has just siteX
         if (set.size() > 1) {
             context.write(sumOfTags, sitesText);
         }
@@ -33,9 +33,9 @@ public class Phase2Reducer extends Reducer<Text, Text, IntWritable, Text> {
 
 //    public void reduce(Text tagsText, Iterable<Text> sites, Context context) throws IOException, InterruptedException {
 //        SortedSet<String> set = new TreeSet<>() ;
-//        sites.forEach(site -> set.add(site.toString()));
+//        sites.forEach(siteX -> set.add(siteX.toString()));
 //        StringBuilder sb = new StringBuilder() ;
-//        set.forEach(site -> sb.append(site.toString()).append("\t"));
+//        set.forEach(siteX -> sb.append(siteX.toString()).append("\t"));
 //        sitesText.set(sb.toString());
 //        if (set.size() > 1)
 //            context.write(tagsText, sitesText);

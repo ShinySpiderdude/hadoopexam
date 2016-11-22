@@ -23,6 +23,7 @@ Can be popular tags with 10k sites per one tag.
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
@@ -93,7 +94,7 @@ public class HadoopExam {
         jobs.add(job("phase-2", intermed1, intermed2, Phase2Mapper.class, Phase2Reducer.class, Text.class, Text.class)) ;
         jobs.add(job("phase-3", intermed2, intermed3, Phase3Mapper.class, Phase3Reducer.class, Text.class, IntWritable.class)) ;
 
-        Job phase4 = job("phase-4", intermed3, out, Phase4Mapper.class, Phase4Reducer.class, SiteSimilarityPair.class, Text.class) ;
+        Job phase4 = job("phase-4", intermed3, out, Phase4Mapper.class, Phase4Reducer.class, SiteSimilarity.class, NullWritable.class) ;
         phase4.setPartitionerClass(Phase4Partitioner.class);
         jobs.add(phase4);
 

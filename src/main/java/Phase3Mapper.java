@@ -44,7 +44,7 @@ public class Phase3Mapper extends Mapper<Object, Text, Text, IntWritable> {
             head = sites.subList(0, sites.size()) ;
         }
 
-        //Pair each site of the head with all sites in the tail and emit (headSite, tailSite) -> numberOfCommonTags
+        //Pair each siteX of the head with all sites in the tail and emit (headSite, tailSite) -> numberOfCommonTags
         for (String headSite : head) {
             for (String tailSite : tail) {
                 writeOut(headSite, tailSite, context);
