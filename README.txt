@@ -4,12 +4,16 @@ The solution to the problem
 We are going to leverage the fact that there is a small number of possible tags for a single site and that
 we are only looking for top N similarities in order to keep calculations to a minimum:
 
+Phase 1:
+
 Step 1 (Mapper):
 Group tags by site, that is map the input (siteX tagY) to (siteX -> tag1, tag2, tag3....)
 
 Step 2 (Reducer):
 Sort the values (there can be max 100) in some order, doesn't really matter which as long as the order is consistent across all entries.
  (tags are strings so string natural ordering is fine). And write to file
+
+Phase 2:
 
 Step 3 (Mapper):
 For each possible ordered permutation emit:
@@ -30,7 +34,10 @@ We will sum the KEYS and emit the results (also dropping along all results that 
 because that just means that a site is common with itself by virtue of that set of tags)
 (1 -> site1, site2, site3) (2 -> site1, site3)...
 
-So this is where it gets ugly...
+
+Phase 3:
+
+So this is where it gets a bit messy...
 Ideally, We now want to eliminate duplicates we got above by the tag subsets. That is, if we have:
 1 site1 site2 (from <tag1>)
 1 site2 site1 (from <tag2>) (notice that they aren't ordered)
@@ -51,16 +58,18 @@ Step 6 (Reducer):
 We now have entries of the form: (siteX, siteY) -> (number-of-common-tags-1, number-of-common-tags2)
 emit the pair and the max of all common-tags
 
+Phase 4:
 
-Step 5 (Mapper):
+Step 7 (Mapper):
 We now map each entry to the form (siteX common-tags) -> (similar site) in order to create a secondary index
 We don't need all sets of (siteX siteY) as this will both take too long (as long as 10K^2 operations per entry)
 and is not needed since we only need top 10 similarities (we will "arbitrarily" choose the first 11 sites (for code
 readability) to be the similar sites for every site in this entry).
-(Technical note: We'll have to create a "WritableComparable" object for the key in order to sort by
+Technical note: We'll have to create a "WritableComparable" object for the key in order to sort by
 (siteX ASC, common-tags DESC))
+And a partitioner to partition the entries by "siteX"
 
-Step 6 (Reducer):
+Step 8 (Reducer):
 We are almost done. Since the input to the reducer is sorted by the [composite] key, we will have
 sorted entries by both site and common-tag-number. We will iterate through the 10 highest entries and drop
 the rest.

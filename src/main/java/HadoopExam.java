@@ -22,6 +22,7 @@ Can be popular tags with 10k sites per one tag.
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
@@ -29,14 +30,12 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
 public class HadoopExam {
 
-    public static int TOP_X = 10 ;
+    public static int TOP_X = 2 ;
 
     //A method to delete a directory, shamelessly copied from Stack overflow
     public static boolean deleteDirectory(String dir) {
@@ -92,10 +91,11 @@ public class HadoopExam {
         List<Job> jobs = new LinkedList<>() ;
         jobs.add(job("phase-1", inPath, intermed1, Phase1Mapper.class, Phase1Reducer.class, Text.class, Text.class)) ;
         jobs.add(job("phase-2", intermed1, intermed2, Phase2Mapper.class, Phase2Reducer.class, Text.class, Text.class)) ;
-        jobs.add(job("phase-3", intermed2, intermed3, Phase3Mapper.class, Phase3Reducer.class, Text.class, Text.class)) ;
-        //jobs.add(job("job2", intermed1, intermed2, Job2.SiteSumMapper.class, Job2.SiteSumReducer.class, Text.class, Text.class));
-        //jobs.add(job("job3", intermed2, out, Job3.CompositeKeyMapper.class, Job3.SiteCombinationsReducer.class, Job3.SiteAndTagCount.class, Text.class)) ;
+        jobs.add(job("phase-3", intermed2, intermed3, Phase3Mapper.class, Phase3Reducer.class, Text.class, IntWritable.class)) ;
 
+        Job phase4 = job("phase-4", intermed3, out, Phase4Mapper.class, Phase4Reducer.class, SiteSimilarityPair.class, Text.class) ;
+        phase4.setPartitionerClass(Phase4Partitioner.class);
+        jobs.add(phase4);
 
         //Chain the jobs
         for (Job job : jobs) {
