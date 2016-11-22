@@ -95,35 +95,51 @@ Notice that once i pick the max value from each list i already have the TOP 2 re
 
 Step 5 (Mapper):
 For each entry, choose 10 random sites (since they aren't ordered, choosing the first 10 is just fine) and emit
- (siteX, siteY) -> count-of-common-tags for each pair (in an ordered manner, so that site1 < site2)
-Last, pair the 10 chosen sites (ordered) between themselves and emit.
+ (siteX, siteY) -> count-of-common-tags (i call this "similarity", for short) and (siteY, siteX) -> similarity.
+Last, pair the 10 chosen sites between themselves and emit.
 
 Step 6 (Reducer):
 We now have entries of the form: (siteX, siteY) -> (number-of-common-tags-1, number-of-common-tags2)
 emit the pair and the max of all common-tags
 
 Phase 4:
+In the beginning of this phase we have an input of the form
+site1 site2 40
+site1 site3 39
+site1 site2 42
+site4 site7 88
+etc..
+The important thing here is that the sites aren't ordered in any and that there may be more than the required
+10 similarities for each pair.
+As a reminder, it is worth noting that the list does not contain all possible pairs but it DOES contain at least
+ 10 similar-sites for each site and it is guaranteed that there is no similar-site for any site that has a better
+ similarity for that site but does not appear in this list.
+
 
 Step 7 (Mapper):
 In this step we do the secondary sorting and the top 10 in one go, doing just some small work in the reducer.
 It is possible to use "secondary sort" the "traditional" way (at least, that's how it seems most people who blog
- about it do) of creating a support class for the key of type (siteX, similarity) (We still partition by siteX in order
- for all siteX mappings to go the same reducer).
- If i didn't need top 10 i would probably use that method, however, this might result in an output of:
- site1, 10 -> site2, site3, site4
- site1, 9 -> site5, site6
- site1, 8 -> site7
+ about it do) of creating a support class for the key of type (siteX, similarity) but that's not the way that we are
+ going to do it. (We still partition by siteX in order for all siteX mappings to go the same reducer, however)
+If i didn't need top 10 i would probably use that method, however, this might result in an output of:
+ site1, 10 -> [site2, site3, site4]
+ site1, 9 -> [site5, site6]
+ site1, 8 -> [site7]
  etc..
 which will result in having to do some funky coding to get the top 10.
 Instead i opted to do following (i think it's simpler, i can see a different point of view here, though):
 The key class is built out of (siteX, similarity, siteY) fields
 Its comparator is made out of (siteX ASC, similarity DESC, siteY ASC)
-The mapper emits no value
+The mapper emits the key with no value
 This results in a natural reducer input of:
 site1, 10, site2
 site1, 10, site3
 site1, 10, site4
 site1, 9, site5
+.
+.
+site2, 10, site1
+site2, 8, site7
 etc...
 
 
@@ -134,4 +150,27 @@ Since the partitioner sends all "siteX" records to the same reducer, and they ar
 until we reach 10 and we stop emitting. When siteX changes we simply reset the counter..
 
 
+
+Assumptions about the input
+---------------------------
+I actually have only one assumption, that the input is valid.
+That is that it is of the form "siteX   tagY" for each input.
+You can even send the same set twice, i don't mind :)
+
+
+
+How to run
+----------
+If you want to run this from the main class (or within an IDE) run the HadoopExam class
+You can also run "mvn clean package" to create an executable jar named "HadoopExam-1.0.jar" in the target directory
+In any case the program requires 3 command line arguments: [inputfile, temporary-folder, output-folder]
+for example you could run:
+java -jar HadoopExam-1.0.jar input.txt temp/ out/
+I didn't try to run it on an actual hadoop cluster (simulated or not). I figured it didn't really matter.
+If it is essential to make these adjustments tell me and i'll make them.
+
+
+
+Time spent
+----------
 
